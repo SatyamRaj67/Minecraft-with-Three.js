@@ -4,6 +4,7 @@ import Stats from "three/addons/libs/stats.module.js";
 import { World } from "./world";
 import { createUI } from "./ui";
 import { Player } from "./player";
+import { Physics } from "./physics";
 
 const stats = new Stats();
 document.body.append(stats.dom);
@@ -34,7 +35,8 @@ const world = new World();
 world.generate();
 scene.add(world);
 
-const player = new Player(scene)
+const player = new Player(scene);
+const physics = new Physics(scene);
 
 function setupLights() {
   const sun = new THREE.DirectionalLight();
@@ -46,7 +48,7 @@ function setupLights() {
   sun.shadow.camera.bottom = -50;
   sun.shadow.camera.near = 0.1;
   sun.shadow.camera.far = 100;
-  sun.shadow.bias = - 0.0005;
+  sun.shadow.bias = -0.0005;
   sun.shadow.mapSize = new THREE.Vector2(512, 512);
   scene.add(sun);
 
@@ -67,7 +69,12 @@ function animate() {
 
   requestAnimationFrame(animate);
   player.applyInputs(dt);
-  renderer.render(scene, player.controls.isLocked ? player.camera : orbitCamera);
+  player.updateBoundsHelper();
+  physics.update(dt, player, world);
+  renderer.render(
+    scene,
+    player.controls.isLocked ? player.camera : orbitCamera,
+  );
   stats.update();
 
   previousTime = currentTime;

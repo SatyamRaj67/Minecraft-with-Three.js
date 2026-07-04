@@ -129,6 +129,7 @@ export class World extends THREE.Group {
       .forEach((blockType) => {
         const mesh = new THREE.InstancedMesh(
           geometry,
+          // @ts-ignore
           blockType.material,
           maxCount,
         );
@@ -136,6 +137,7 @@ export class World extends THREE.Group {
         mesh.count = 0;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
+        // @ts-ignore
         meshes[blockType.id] = mesh;
       });
 
@@ -147,11 +149,12 @@ export class World extends THREE.Group {
 
           if (blockId === blocks.empty.id) continue;
 
+          // @ts-ignore
           const mesh = meshes[blockId];
           const instanceId = mesh.count;
 
           if (!this.isBlockObscured(x, y, z)) {
-            matrix.setPosition(x + 0.5, y + 0.5, z + 0.5);
+            matrix.setPosition(x, y, z);
             mesh.setMatrixAt(instanceId, matrix);
             this.setBlockInstanceId(x, y, z, instanceId);
             mesh.count++;
@@ -160,6 +163,7 @@ export class World extends THREE.Group {
       }
     }
 
+    // @ts-ignore
     this.add(...Object.values(meshes));
   }
 
