@@ -141,7 +141,7 @@ export class WorldChunk extends THREE.Group {
           blockType.material,
           maxCount,
         );
-        mesh.name = blockType.name;
+        mesh.name = blockType.id.toString();
         mesh.count = 0;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -191,6 +191,88 @@ export class WorldChunk extends THREE.Group {
   }
 
   /**
+   * Adds a new block at (x, y, z) of type 'blockId'
+   */
+  addBlock(x: number, y: number, z: number, blockId: number) {
+    if (this.getBlock(x, y, z)?.id === blocks.empty.id) {
+      this.setBlockId(x, y, z, blockId);
+      this.addBlockInstance(x, y, z);
+    }
+  }
+
+  /**
+   * Removes the block at (x, y, z)
+   */
+  removeBlock(x: number, y: number, z: number) {
+    const block = this.getBlock(x, y, z);
+    if (block && block.id !== blocks.empty.id) {
+      this.deleteBlockInstance(x, y, z);
+      this.setBlockId(x, y, z, blocks.empty.id);
+    }
+  }
+
+  /**
+   * Removes the mesh instance associated with 'block' by swapping it
+   * with the last instance and decrementing the instance count
+   */
+  deleteBlockInstance(x: number, y: number, z: number) {
+    const block = this.getBlock(x, y, z)!;
+
+    if (block.instanceId === null) return;
+
+    // Get the mesh and instance id of the block
+    const mesh = this.children.find((instanceMesh) => {
+      return instanceMesh.name === block.id.toString();
+    }) as THREE.InstancedMesh;
+    const instanceId = block.instanceId;
+
+    // Swapping the transformation matrix of the block in the last position
+    // with the block that we are going to remove
+    const lastMatrix = new THREE.Matrix4();
+    mesh.getMatrixAt(mesh.count - 1, lastMatrix);
+
+    // Updating the instance id of the block in the last position to its new instance id
+    const v = new THREE.Vector3();
+    v.applyMatrix4(lastMatrix);
+    this.setBlockInstanceId(v.x, v.y, v.z, instanceId);
+
+    // Swapping the transformation matrices
+    mesh.setMatrixAt(instanceId, lastMatrix);
+
+    // This effectively removes the last instance from the scene
+    mesh.count!--;
+
+    // Notify the isntanced mesh we updated the instance matrix
+    // Also re-compute the bounding sphere so raycasting works
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+
+    this.setBlockInstanceId(x, y, z, null);
+  }
+
+  /**
+   * Creates a new instance for the block at (x, y, z)
+   */
+  addBlockInstance(x: number, y: number, z: number) {
+    const block = this.getBlock(x, y, z)!;
+
+    if (block && block.id !== blocks.empty.id && block.instanceId === null) {
+      // Get the mesh and instance id of the block
+      const mesh = this.children.find((instanceMesh) => {
+        return instanceMesh.name === block.id.toString();
+      }) as THREE.InstancedMesh;
+
+      const instanceId = mesh.count++;
+      this.setBlockInstanceId(x, y, z, instanceId);
+
+      const matrix = new THREE.Matrix4();
+      matrix.setPosition(x, y, z);
+      mesh.setMatrixAt(instanceId, matrix);
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+  }
+
+  /**
    * Sets the block ID for the block at (x, y, z)
    * @param x
    * @param y
@@ -214,7 +296,12 @@ export class WorldChunk extends THREE.Group {
    * @param instanceId
    * @returns
    */
-  setBlockInstanceId(x: number, y: number, z: number, instanceId: number) {
+  setBlockInstanceId(
+    x: number,
+    y: number,
+    z: number,
+    instanceId: number | null,
+  ) {
     if (this.inBounds(x, y, z)) {
       this.data[x][y][z].instanceId = instanceId;
     } else {
@@ -257,7 +344,7 @@ export class WorldChunk extends THREE.Group {
     this.traverse((obj) => {
       // @ts-ignore
       if (obj.dispose) obj.dispose();
-    })
+    });
     this.clear();
   }
 }

@@ -5,6 +5,7 @@ import { createUI } from "./ui";
 import { Player } from "./player";
 import { Physics } from "./physics";
 import { World } from "./world";
+import { blocks } from "./blocks";
 
 const stats = new Stats();
 document.body.append(stats.dom);
@@ -52,7 +53,7 @@ function setupLights() {
   sun.shadow.bias = -0.0001;
   sun.shadow.mapSize = new THREE.Vector2(2048, 2048);
   scene.add(sun);
-  scene.add(sun.target)
+  scene.add(sun.target);
 
   // const shadowHelper = new THREE.CameraHelper(sun.shadow.camera);
   // scene.add(shadowHelper);
@@ -61,6 +62,27 @@ function setupLights() {
   ambient.intensity = 0.1;
   scene.add(ambient);
 }
+
+function onMouseDown(event: MouseEvent) {
+  if (player.controls.isLocked && player.selectedCoords) {
+    if (player.activeBlockId === blocks.empty.id) {
+      world.removeBlock(
+        player.selectedCoords.x,
+        player.selectedCoords.y,
+        player.selectedCoords.z,
+      );
+    } else {
+      world.addBlock(
+        player.selectedCoords.x,
+        player.selectedCoords.y,
+        player.selectedCoords.z,
+        player.activeBlockId
+      )
+    }
+  }
+}
+
+document.addEventListener("mousedown", onMouseDown, false);
 
 // Render loop
 let previousTime = performance.now();
@@ -71,6 +93,7 @@ function animate() {
 
   requestAnimationFrame(animate);
   if (player.controls.isLocked) {
+    player.update(world);
     physics.update(dt, player, world);
     world.update(player);
 

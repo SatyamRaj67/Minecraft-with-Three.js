@@ -21,17 +21,18 @@ export function createUI(scene: THREE.Scene, world: World, player: Player) {
   
   const terrainFolder = gui.addFolder("Terrain");
   terrainFolder.add(world, "asyncLoading").name("Async Chunk Loading");
-  terrainFolder.add(world, "drawDistance", 0, 5).name("Render Distance");
-  terrainFolder.add(world.params, "seed", 0, 10000).name("Seed");
+  terrainFolder.add(world, "drawDistance", 0, 5, 1).name("Render Distance");
+  terrainFolder.add(world.params, "seed", 0, 10000, 1).name("Seed");
   terrainFolder.add(world.params.terrain, "scale", 10, 100).name("Scale");
   terrainFolder.add(world.params.terrain, "magnitude", 0, 1).name("Magnitude");
   terrainFolder.add(world.params.terrain, "offset", 0, 1).name("Offset");
 
+  const resourcesFolder = gui.addFolder("Resources");
   resources.forEach((resource) => {
-    const resourcesFolder = gui.addFolder(`Resource: ${resource.name}`);
-    resourcesFolder.add(resource, "scarcity", 0, 1).name("Scarcity");
+    const resourceFolder = resourcesFolder.addFolder(`Resource: ${resource.name}`);
+    resourceFolder.add(resource, "scarcity", 0, 1).name("Scarcity");
 
-    const scaleFolder = resourcesFolder.addFolder("Scale");
+    const scaleFolder = resourceFolder.addFolder("Scale");
     scaleFolder.add(resource.scale, "x", 1, 100).name("Scale X");
     scaleFolder.add(resource.scale, "y", 1, 100).name("Scale Y");
     scaleFolder.add(resource.scale, "z", 1, 100).name("Scale Z");
