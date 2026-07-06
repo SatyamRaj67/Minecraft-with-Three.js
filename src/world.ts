@@ -16,7 +16,7 @@ export class World extends THREE.Group {
    * the adjacent chunks are rendered; if set to 2, the
    * chunks adjacent to those are rendered, and so on.
    */
-  drawDistance = 3;
+  drawDistance = 2;
 
   chunkSize = {
     width: 32,

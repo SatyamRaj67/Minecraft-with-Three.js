@@ -1,10 +1,8 @@
-/**
- * @type {import('vite').UserConfig}
- */
+import { defineConfig } from "vite";
 
-export default {
-    base: "./",
-    build: {
-        sourcemap: true,
-    }
-}
+export default defineConfig({
+  base: "./",
+  build: {
+    sourcemap: true,
+  },
+});
