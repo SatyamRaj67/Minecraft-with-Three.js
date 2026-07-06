@@ -8,10 +8,13 @@ export class ModelLoader {
   };
 
   loadModels(onLoad: (models: { pickaxe: any }) => void) {
-    this.loader.load("/model/pickaxe.glb", (model) => {
-      const mesh = model.scene;
-      this.models.pickaxe = mesh;
-      onLoad(this.models);
-    });
+    this.loader.load(
+      `${import.meta.env.BASE_URL}model/pickaxe.glb`,
+      (model) => {
+        const mesh = model.scene;
+        this.models.pickaxe = mesh;
+        onLoad(this.models);
+      },
+    );
   }
 }

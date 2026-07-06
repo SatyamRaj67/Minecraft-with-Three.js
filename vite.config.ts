@@ -3,6 +3,7 @@
  */
 
 export default {
+    base: "/Minecraft-with-Three.js/",
     build: {
         sourcemap: true,
     }
